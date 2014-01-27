@@ -200,14 +200,13 @@ HttpResponse.prototype.body = function(body) {
 //------------------------------------- UTILITIES
 
 HttpResponse.prototype.toString = function () {
-	return '[HTTP_RESPONSE_OBJECT]';
+	//return '[HTTP_RESPONSE_OBJECT]';
 	var str = [];
 	str.push('HTTP/1.1 ' + this._status + ' ' + stringifyStatus(this._status));
 	for(var i=0; i<this._headers.length; i++)
 		str.push(this._headers[i][0] + ': ' + this._headers[i][1]);
 	str.push('');
-	/*if(this._body) 
-		str.push(this._body);*/
+	if(this._body) str.push(this._body);
 	return str.join('\n');
 };
 
