@@ -29,7 +29,7 @@ Logger.prototype.attachUncaughtHandler = function (handler) {
 		this[uncaughtLevel](err);
 	}, this);
 
-	process.removeAllListeners('uncaughtException');
+	//process.removeAllListeners('uncaughtException');
 	process.on('uncaughtException', handler);
 };
 
