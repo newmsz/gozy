@@ -4,7 +4,8 @@ var cluster = require('cluster');
 var _ = require('underscore'),
 	fs = require('fs'),
 	mime = require('mime'),
-	crypto = require('crypto');
+	crypto = require('crypto'),
+	zlib = require('zlib');
 var view = require('./view');
 
 var resource_path, resource_url, debug_mode;
@@ -55,7 +56,8 @@ exports.interceptResourceRequest = function (request, response) {
 	
 	var path = request.pathname(),
 		method = request.method(),
-		accept = request.accept();
+		accept = request.accept(),
+		accept_encoding = request.header('accept-encoding');
 		
 	if(!path || !method || !accept || method !== 'GET') 
 		return false;
@@ -88,12 +90,30 @@ exports.interceptResourceRequest = function (request, response) {
 
 			if((_accept[0] === '*' || item_accept[0] === _accept[0]) &&
 					(_accept[1] === '*' || item_accept[1] === _accept[1])) {
+				
 				if(request.isModified(item.etag, item.last_modified)) {
-					response.OK()
-							.body(item.content)
-							.contentType(item.content_type)
-							.cacheFor(item.etag, item.last_modified)
-							.commit();
+					
+					if(item.deflate && accept_encoding.match(/deflate/)) {
+						response.OK()
+								.body(item.deflate)
+								.contentType(item.content_type)
+								.cacheFor(item.etag, item.last_modified)
+								.appendHeader('content-encoding', 'deflate')
+								.commit();
+					} else if(item.gzip && accept_encoding.match(/gzip/)) {
+						response.OK()
+								.body(item.gzip)
+								.contentType(item.content_type)
+								.cacheFor(item.etag, item.last_modified)
+								.appendHeader('content-encoding', 'gzip')
+								.commit();
+					} else {
+						response.OK()
+								.body(item.content)
+								.contentType(item.content_type)
+								.cacheFor(item.etag, item.last_modified)
+								.commit();
+					}
 				} else
 					response.NotModified(item.etag, item.last_modified).commit();
 				return true;
@@ -152,12 +172,35 @@ function readFile(path, disableHash) {
 	if(!stat.isFile()) return null;
 	var buf = fs.readFileSync(path)
 	
-	return {
+	var file = {
 		'content': buf,
+		'gzip': null,
+		'deflate': null,
 		'etag': disableHash === true ? null : getHash(buf),
 		'last_modified': stat.mtime.toUTCString(),
 		'content_type': mime.lookup(path)
 	};	
+	
+	
+	zlib.deflate(buf, function(err, buffer) {
+		if(err) {
+			global.gozy.error('An error occured while deflating the content: ' + path);
+			global.gozy.error(err);
+		} else {
+			file.deflate = buffer;
+		}
+	});
+	
+	zlib.gzip(buf, function(err, buffer) {
+		if(err) {
+			global.gozy.error('An error occured while gzipping the content: ' + path);
+			global.gozy.error(err);
+		} else {
+			file.gzip = buffer;
+		}
+	});
+	
+	return file;
 }
 
 function getHash(buf) {
