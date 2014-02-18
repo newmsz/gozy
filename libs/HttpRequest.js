@@ -33,15 +33,14 @@ function HttpRequest(req, cb) {
 	
 	if(print_request) global.gozy.debug('printing request...\n----------- REQUEST BEGIN -----------\n' + this.toString() + '------------ REQUEST END ------------');
 	
-	if((this._method === 'POST' || this._method === 'PUT' || this._method === 'PATCH') && this._headers['content-type'])
+	if((this._method === 'POST' || this._method === 'PUT' || this._method === 'PATCH'))
 		return parseBody(req, this, cb);
 	else
 		return cb(this);
 }
 
 function parseBody(req, http_req, cb) {
-	var content_type = http_req._headers[CONTENT_TYPE].split(';')[0];
-	
+	var content_type = (!http_req._headers[CONTENT_TYPE] ? 'application/x-www-form-urlencoded' : http_req._headers[CONTENT_TYPE].split(';')[0]);
 	switch(content_type) {
 	case 'multipart/form-data':
 		new formidable.IncomingForm().parse(req, function(err, fields, files) {
@@ -364,8 +363,11 @@ function parseCookie(cookie_str) {
 }
 
 function getCharset (str) {
-	var charset = str.split(';')[1];
-	if(!charset) return '';
+	if(!str) return 'utf8';
+	var charset = str.split(';');
+	if(charset.length == 2) charset = charset[1];
+	else return 'utf8';
+	
 	charset = charset.split('=');
 	if(!charset || charset.length !== 2) return '';
 	
