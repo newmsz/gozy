@@ -5,7 +5,10 @@ var _ = require('underscore'),
 	fs = require('fs'),
 	mime = require('mime'),
 	crypto = require('crypto'),
-	zlib = require('zlib');
+	zlib = require('zlib'),
+	uglifyjs = require('uglify-js'),
+	uglifycss = require('uglifycss');
+
 var view = require('./view');
 
 var resource_path, resource_url, debug_mode;
@@ -134,7 +137,7 @@ exports.bindResources = function (resourcepath, bindurl, debug) {
 		if(cluster.isMaster) global.gozy.info('Static resources will not be cached since debug mode is enabled');
 		debug_mode = true;
 		return this;
-	}
+	} else if(cluster.isMaster) global.gozy.info('Binding static resources... (this may takes long time to uglify "application/javascript" and "text/css" file in order to reduce the file size)');
 	
 	fs.readdirSync(resource_path).forEach(function (file_name) {
 		fs_queue.push(resource_path + '/' + file_name);
@@ -170,7 +173,26 @@ function readFile(path, disableHash) {
 	if(!exist) return null;
 	var stat = stat = fs.statSync(path);
 	if(!stat.isFile()) return null;
-	var buf = fs.readFileSync(path)
+	var buf = fs.readFileSync(path);
+	
+	if(mime.lookup(path) == 'application/javascript') {
+		var final_code = uglifyjs.minify(buf.toString(), { 
+			fromString: true, 
+			warnings: false,
+			filename: path
+		}).code;
+	
+		buf = new Buffer(final_code);
+	}
+	
+	if(mime.lookup(path) == 'text/css') {
+		var final_code = uglifycss.processString(buf.toString(), { 
+			maxLineLen: 500, 
+			expandVars: true 
+		});
+		
+		buf = new Buffer(final_code);
+	}
 	
 	var file = {
 		'content': buf,
@@ -180,7 +202,6 @@ function readFile(path, disableHash) {
 		'last_modified': stat.mtime.toUTCString(),
 		'content_type': mime.lookup(path)
 	};	
-	
 	
 	zlib.deflate(buf, function(err, buffer) {
 		if(err) {
