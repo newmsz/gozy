@@ -1,7 +1,8 @@
 "use strict";
 
 var cluster = require('cluster'),
-	redis = require('redis');
+	redis = require('redis'),
+	_ = require('underscore');
 
 var STORAGE_TYPE= 'storage_type',
 	SUPPORT_STORAGE_TYPES = ['HASH', 'STRING', 'SORTEDSET', 'SET'],
@@ -32,7 +33,11 @@ Redis.prototype.connect = function (cb) {
 			this.redis.auth(this.password, function(arg) {
 				if(cluster.isMaster) global.gozy.info('Successfully connected to ' + name);
 				cb && cb();	
-			});	
+			});
+			
+			setInterval(_.bind(function () {
+				this.redis.ping(function () { });
+			}, this), 60 * 60 * 1000);
 		} else {
 			if(cluster.isMaster) global.gozy.info('Successfully connected to ' + name);
 			cb && cb();
