@@ -7,6 +7,7 @@ var cluster = require('cluster'),
 	model = require('./libs/model'),
 	view = require('./libs/view'),
 	mailer = require('./libs/mailer'),
+	job = require('./libs/job'),
 	renderer = require('./libs/renderer'),
 	HttpRequest = require('./libs/HttpRequest'),
 	HttpResponse = require('./libs/HttpResponse');
@@ -29,6 +30,11 @@ Gozy.prototype.bindModels = function (path) {
 
 Gozy.prototype.bindViews = function (path) {
 	view.bind(path, this);
+	return this;
+};
+
+Gozy.prototype.bindJobs = function (path) {
+	job.bind(path, this);
 	return this;
 };
 
@@ -82,6 +88,7 @@ Gozy.prototype.enableWebSocket = function () {
 Gozy.prototype.Model = model.Model;
 Gozy.prototype.View = view.View;
 Gozy.prototype.Mailer = mailer.Mailer;
+Gozy.prototype.Job = job.Job;
 
 Gozy.prototype.bindMongo = model.bindMongo;
 Gozy.prototype.bindRedis = model.bindRedis;
