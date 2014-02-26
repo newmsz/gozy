@@ -15,6 +15,7 @@ var cluster = require('cluster'),
 function Gozy() {
 	this._logger = logger.defaultLogger();
 	this._websocket = false;
+	this._jobpath = null;
 	this._workers = require('os').cpus().length; 
 }
 
@@ -34,7 +35,8 @@ Gozy.prototype.bindViews = function (path) {
 };
 
 Gozy.prototype.bindJobs = function (path) {
-	job.bind(path, this);
+	this._jobpath = path;
+	//job.bind(path, this);
 	return this;
 };
 
@@ -97,12 +99,15 @@ Gozy.prototype.bindMySQL = model.bindMySQL;
 Gozy.prototype.bindMailer = mailer.bindMailer;
 
 function prep(cb) {
+	var self = this;
+	
 	model.connectAll(function (err, res) {
 		if(err) return cb(err);
 		
 		mailer.initializeAll();
 		//view.prepareView();
 		
+		if(self._jobpath) job.bind(self._jobpath, self); 
 		return cb(null);
 	});
 }
