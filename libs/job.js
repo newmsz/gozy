@@ -13,11 +13,14 @@ exports.Job = function (obj, opt) {
 	if(opt.every) {
 		if(cluster.isMaster) global.gozy.info('A Job is scheduled for every ' + opt.every + 'ms');
 		setInterval(function () {
-			obj.emit('do');
+			if(!obj._aborted) obj.emit('do');
 		}, opt.every);
 	}
 	
 	obj.emit('initialize');
+	
+	obj._aborted = false;
+	obj.abort = function () { obj._aborted = true; };
 };
 
 exports.bind = function (job_path, obj) {
