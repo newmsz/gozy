@@ -30,6 +30,12 @@ MySQL.prototype.connect = function (cb) {
   			if(cluster.isMaster) global.gozy.info('Successfully connected to ' + this.name);
   			cb && cb();
   		}, this));
+		
+		this.mysql.on('error', _.bind(function(err) {
+			if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+				this.connect();
+			} else throw err;
+		}, this));
 	} else {
 		if(cluster.isMaster) global.gozy.error('MySQL connection failed');
 		if(cb) cb();
