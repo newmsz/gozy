@@ -22,10 +22,13 @@ Redis.prototype.connect = function (cb) {
 		if(cluster.isMaster) global.gozy.info('Connecting to Redis "' + this.name + '"(' + this.host + ':' + this.port + ' ' + (this.password ? 'with password)' : 'without password)'));
 		
 		this.redis = redis.createClient(this.port, this.host, null);
-		this.redis.on('error', function (err) {
+		this.redis.on('error', _.bind(function (err) {
+			if(err.toString().match(/ETIMEDOUT/)) return this.connect(function () { }); 
+			global.gozy.error('error 1');
 			global.gozy.error(err);
+			
 			cb && cb();
-		});
+		}, this));
 		
 		var name = this.name;
 		
@@ -57,6 +60,9 @@ Redis.prototype.clone = function (cb) {
 	
 	_new.redis = redis.createClient(_new.port, _new.host, null);
 	_new.redis.on('error', function (err) {
+		if(err.toString().match(/ETIMEDOUT/)) return _new.connect(function () { });
+		
+		global.gozy.error('error 2');
 		global.gozy.error(err);
 	});
 	
