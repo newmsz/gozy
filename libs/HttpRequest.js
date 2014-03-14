@@ -127,7 +127,7 @@ function parseBody(req, http_req, cb) {
 		});	
 		break;
 	default:
-		global.gozy.warning('unknown content-type: ' + content_type);
+		global.gozy.warn('unknown content-type: ' + content_type);
 		return cb(http_req);
 	}
 }
