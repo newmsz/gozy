@@ -59,7 +59,8 @@ Gozy.prototype.listen = function (port) {
 				cluster.fork();
 			
 			cluster.on('exit', function(worker, code, signal) {
-				console.log('worker ' + worker.process.pid + ' died');
+				global.gozy.error('worker %d died (%s). restarting...', worker.process.pid, signal || code);
+				cluster.fork();
 			});
 		} else {
 			http.createServer(this.onRequest).listen(port);
