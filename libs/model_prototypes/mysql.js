@@ -215,7 +215,13 @@ MySQL.prototype.generate_count = function (name, def) {
 	return function (Query, cb) {
 		var val;
 		
-		if(typeof Query === 'string') {
+		if(typeof Query == 'function') {
+			cb = Query;
+			return me.mysql.query('SELECT COUNT(*) AS CNT FROM `' + name + '`', function (err, res) {
+				if(err || res.length === 0) return cb(err, null);
+				cb(null, res[0].CNT);
+			});
+		} else if(typeof Query === 'string') {
 			val = cb;
 			cb = arguments[2];
 			Query = 'SELECT COUNT(*) AS CNT FROM `' + name + '` WHERE ' + Query;	
