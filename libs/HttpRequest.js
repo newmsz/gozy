@@ -121,7 +121,7 @@ function parseBody(req, http_req, cb) {
 				http_req._body = _body;
 				return cb(http_req);
 			} catch (err) {
-				global.gozy.error(err.stack);
+				http_req._body = { };
 				return cb(http_req);
 			}
 		});	
