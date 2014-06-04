@@ -187,7 +187,11 @@ HttpResponse.prototype.commit = function () {
 };
 
 HttpResponse.prototype.appendHeader = function (name, value) {
-	this._headers.push([name, value]);
+	if(Array.isArray(name)) {
+		if(name.length != 2) global.gozy.error('Array-type header is tried, but length is not 2');
+		this._headers.push(name);
+	} else
+		this._headers.push([name, value]);
 	return this;
 };
 
