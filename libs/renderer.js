@@ -96,14 +96,14 @@ exports.interceptResourceRequest = function (request, response) {
 				
 				if(request.isModified(item.etag, item.last_modified)) {
 					
-					if(item.deflate && accept_encoding.match(/deflate/)) {
+					if(item.deflate && accept_encoding && accept_encoding.match(/deflate/)) {
 						response.OK()
 								.body(item.deflate)
 								.contentType(item.content_type)
 								.cacheFor(item.etag, item.last_modified)
 								.appendHeader('content-encoding', 'deflate')
 								.commit();
-					} else if(item.gzip && accept_encoding.match(/gzip/)) {
+					} else if(item.gzip && accept_encoding && accept_encoding.match(/gzip/)) {
 						response.OK()
 								.body(item.gzip)
 								.contentType(item.content_type)
