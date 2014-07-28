@@ -30,7 +30,7 @@ function HttpRequest(req, cb) {
 	if(this._url.query) this._url.query = qs.parse(this._url.query);
 	this._method = req.method;
 	this._cookie = parseCookie(this._headers['cookie']);
-	
+	this._request = req;
 	if(print_request) global.gozy.debug('printing request...\n----------- REQUEST BEGIN -----------\n' + this.toString() + '------------ REQUEST END ------------');
 	
 	if((this._method === 'POST' || this._method === 'PUT' || this._method === 'PATCH'))
@@ -38,6 +38,10 @@ function HttpRequest(req, cb) {
 	else
 		return cb(this);
 }
+
+HttpRequest.prototype.on = function (evt, func) {
+	this._request.on.call(this._request, evt, func);
+};
 
 function parseBody(req, http_req, cb) {
 	var content_type = (!http_req._headers[CONTENT_TYPE] ? 'application/x-www-form-urlencoded' : http_req._headers[CONTENT_TYPE].split(';')[0]);
@@ -126,6 +130,7 @@ function parseBody(req, http_req, cb) {
 			}
 		});	
 		break;
+	/* TODO: Support text/xml */
 	default:
 		global.gozy.warn('unknown content-type: ' + content_type);
 		return cb(http_req);

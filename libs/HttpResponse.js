@@ -72,6 +72,10 @@ function generateHttpResponse(status) {
 }
 //------------------------------------- APPLICATION FUNCTION
 
+HttpResponse.prototype.on = function (evt, func) {
+	this._response.on.call(this._response, evt, func);
+};
+
 HttpResponse.prototype.setStatus = function (status) {
 	this._status = status;
 	return this;
