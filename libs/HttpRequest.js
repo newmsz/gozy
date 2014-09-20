@@ -46,6 +46,8 @@ HttpRequest.prototype.on = function (evt, func) {
 
 function parseBody(req, http_req, cb) {
 	var content_type = (!http_req._headers[CONTENT_TYPE] ? 'application/x-www-form-urlencoded' : http_req._headers[CONTENT_TYPE].split(';')[0]);
+	var returned = false;
+	
 	switch(content_type) {
 	case 'multipart/form-data':
 		new formidable.IncomingForm().parse(req, function(err, fields, files) {
@@ -65,6 +67,7 @@ function parseBody(req, http_req, cb) {
 			}
 			
 			http_req._body = _body;
+			returned = true;
 			return cb(http_req);
 		});
 		break;
@@ -99,9 +102,12 @@ function parseBody(req, http_req, cb) {
 					}
 				}
 				http_req._body = _body;
-				return cb(http_req);
 			} catch (err) {
 				global.gozy.error(err.stack);
+			}
+			
+			if(!returned) {
+				returned = true;
 				return cb(http_req);
 			}
 		});	
@@ -128,9 +134,12 @@ function parseBody(req, http_req, cb) {
 			try {
 				var _body = JSON.parse(buf.toString(charset));
 				http_req._body = _body;
-				return cb(http_req);
 			} catch (err) {
 				http_req._body = { };
+			}
+			
+			if(!returned) {
+				returned = true;
 				return cb(http_req);
 			}
 		});	
@@ -138,6 +147,7 @@ function parseBody(req, http_req, cb) {
 	/* TODO: Support text/xml */
 	default:
 		global.gozy.warn('unknown content-type: ' + content_type);
+		returned = true;
 		return cb(http_req);
 	}
 }

@@ -75,7 +75,7 @@ exports.control = function (request, response) {
 		if(mna.length === 0) return response.NotFound().commit();
 		else return response.MethodNotAllowed(mna.join(',')).commit();
 	}  
-
+	
 	var emit = function (evt, match) {
 		response._target_view = match;
 		
@@ -93,7 +93,7 @@ exports.control = function (request, response) {
 		else if(accept[i] === '*/*')
 			emit_any = true;
 	}
-		
+	
 	var events = _.keys(match._events), acceptable = [];
 	for(var i=0; i< events.length; i++) {
 		if(!/^.+\/.+$/.test(events[i])) continue;
