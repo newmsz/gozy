@@ -27,12 +27,13 @@ function HttpRequest(req, cb) {
 	this._httpVersion = req.httpVersion;
 	this._headers = req.headers;
 	this._url = url.parse(req.url);
+	
 	if(this._url.query) this._url.query = qs.parse(this._url.query);
 	this._method = req.method;
 	this._cookie = parseCookie(this._headers['cookie']);
 	this._request = req;
 	if(print_request) global.gozy.debug('printing request...\n----------- REQUEST BEGIN -----------\n' + this.toString() + '------------ REQUEST END ------------');
-	
+
 	if((this._method === 'POST' || this._method === 'PUT' || this._method === 'PATCH'))
 		return parseBody(req, this, cb);
 	else
@@ -84,6 +85,8 @@ function parseBody(req, http_req, cb) {
 				pos += body[i].length;
 			}
 			
+			if(http_req._headers['transfer-encoding'] == 'chunked') http_req._headers['content-length'] = buf_size;
+			
 			try {
 				var _body = qs.parse(body.toString(charset));
 				for(var key in _body) {
@@ -119,6 +122,8 @@ function parseBody(req, http_req, cb) {
 				body[i].copy(buf, pos);
 				pos += body[i].length;
 			}
+			
+			if(http_req._headers['transfer-encoding'] == 'chunked') http_req._headers['content-length'] = buf_size;
 			
 			try {
 				var _body = JSON.parse(buf.toString(charset));
