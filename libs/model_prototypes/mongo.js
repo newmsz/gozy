@@ -116,8 +116,9 @@ Mongo.prototype.generate_save = function (name) {
 			var criteria = { };
 			criteria[__primary_key__] = this[__primary_key__];
 			
-			collection.update(criteria, this, {safe: safe === undefined ? true : safe}, _.bind(function(err) {
+			collection.update(criteria, this, {safe: safe === undefined ? true : safe}, _.bind(function(err, cnt) {
 				if (err) return cb && cb(err);
+				if (cnt == 0) return cb(new Error('Updating unexisting document (id: ' + this[__primary_key__] + ')'));
 				return cb && cb(err, this);
 			}, this));
 		}	
