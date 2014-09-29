@@ -105,10 +105,15 @@ Mongo.prototype.generate_del = function (name) {
 Mongo.prototype.generate_save = function (name) {
 	var m = this;
 	return function (cb, safe) {
-		var collection = new Collection(m.client, name);
+		var collection = new Collection(m.client, name),
+			self = this;
+		
 		if(!this[__primary_key__]) {
 			collection.insert(this, {safe: safe === undefined ? true : false}, function (err, res) {
-				if(err) return cb(err);
+				if(err) {
+					delete self[__primary_key__];
+					return cb(err);
+				}
 				if(res.length > 0) return cb && cb(err, res[0]);
 				return cb && cb(err, null);
 			});
@@ -116,11 +121,11 @@ Mongo.prototype.generate_save = function (name) {
 			var criteria = { };
 			criteria[__primary_key__] = this[__primary_key__];
 			
-			collection.update(criteria, this, {safe: safe === undefined ? true : safe}, _.bind(function(err, cnt) {
+			collection.update(criteria, this, {safe: safe === undefined ? true : safe}, function(err, cnt) {
 				if (err) return cb && cb(err);
-				if (cnt == 0) return cb(new Error('Updating unexisting document (id: ' + this[__primary_key__] + ')'));
-				return cb && cb(err, this);
-			}, this));
+				if (cnt == 0) return cb(new Error('Updating unexisting document (id: ' + self[__primary_key__] + ')'));
+				return cb && cb(err, self);
+			});
 		}	
 	};
 };
