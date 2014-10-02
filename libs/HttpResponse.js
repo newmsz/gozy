@@ -26,6 +26,7 @@ var HTTP_STATUS = exports.HTTP_STATUS = [
 		{"code": 411, "name": "Length Required", "headers_required": [], "function_required": [''] },
 		{"code": 413, "name": "Request Entity Too Large", "headers_required": [], "function_required": ['closeConnection'] },
 		{"code": 415, "name": "Unsupported Media Type", "headers_required": [], "function_required": [''] },
+		{"code": 423, "name": "Locked", "headers_required": [], "function_required": [''] },
 		{"code": 500, "name": "Internal Server Error", "headers_required": [], "function_required": [''] },
 		{"code": 501, "name": "Not Implemented", "headers_required": [], "function_required": [''] },
 		{"code": 502, "name": "Bad Gateway", "headers_required": [], "function_required": [''] },
