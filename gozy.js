@@ -63,7 +63,9 @@ Gozy.prototype.listen = function (port) {
 				cluster.fork();
 			});
 		} else {
-			http.createServer(this.onRequest).listen(port);
+			var server = http.createServer(this.onRequest);
+			server.maxConnections = 200;
+			server.listen(port);
 			global.gozy.info('Gozy(pid: ' + process.pid + ') is opened on port ' + port);
 		}
 		
