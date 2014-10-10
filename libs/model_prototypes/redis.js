@@ -42,8 +42,13 @@ Redis.prototype.connect = function (cb) {
 				this.redis.ping(function () { });
 			}, this), 60 * 60 * 1000);
 		} else {
-			if(cluster.isMaster) global.gozy.info('Successfully connected to ' + name);
-			cb && cb();
+			this.redis.ping(function (err, pong) {
+				if(err && cluster.isMaster) return global.gozy.error('Redis connection failed: ', err);
+				if(pong != 'PONG' && cluster.isMaster) return global.gozy.error('Redis connection failed: cannot get PONG');
+				
+				if(cluster.isMaster) global.gozy.info('Successfully connected to ' + name);
+				cb && cb();
+			});
 		}
 	} else {
 		if(cluster.isMaster) global.gozy.error('Redis connection failed');
