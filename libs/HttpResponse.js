@@ -170,12 +170,11 @@ HttpResponse.prototype.commit = function () {
 	if(this._committed) return;
 	
 	if(this._content_type) this.appendHeader("Content-Type", this._content_type);
-	else this.appendHeader("Content-Type", "text/plain; charset=UTF-8");
+	else if(this._body) this.appendHeader("Content-Type", "text/plain; charset=UTF-8");
 	
 	if(this._content_disposition) this.appendHeader("Content-Disposition", this._content_disposition);	
 	
 	if(this._body) this.appendHeader("Content-Length", this._body.length);
-	else this.appendHeader("Content-Length", 0);
 	
 	if(!this._status) {
 		global.gozy.error('Response status is not set. Response as 500');
