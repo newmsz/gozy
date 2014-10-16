@@ -337,15 +337,14 @@ HttpRequest.prototype._rewriteRequest = function (_method, _url) {
 
 HttpRequest.prototype.toString = function () {
 	var str = [];
-	str.push('[HTTP REQUEST OBJECT]');
-	str.push('--- REQUEST BEGIN ---');
-	str.push(this._method + ' ' + url.format(this._url) + ' HTTP/' + this._httpVersion);
+	str.push('--- [HTTP REQUEST OBJECT] ---');
+	str.push(this._method + ' ' + this._request.url + ' HTTP/' + this._httpVersion);
 	for(var key in this._headers)
 		str.push(key + ': ' + this._headers[key]);
 	str.push('');
 	if(this._body)
 		str.push(JSON.stringify(this._body));
-	str.push('---- REQUEST END ----');
+	str.push('-----------------------------');
 	return str.join('\n');
 };
 
