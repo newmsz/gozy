@@ -3,40 +3,24 @@
 var cluster = require('cluster');
 var _ = require('underscore'),
 	mongo = require('mongodb'),
-	ObjectID = mongo.ObjectID,
-	Collection = mongo.Collection;
+	ObjectID = mongo.ObjectID;
+
 var __primary_key__ = '_id';
 
-function Mongo(name, options) {
+function Mongo(name, connection_url) {
 	this.name = name;
-	this.host = options.host || 'localhost';
-	this.port = options.port || 27017;
-	this.database = options.database || 'test';
-	this.username = options.username;
-	this.password = options.password;
+	this.connection_url = connection_url;
 }
 
 Mongo.prototype.connect = function (cb) {	
-	if(cluster.isMaster) global.gozy.info('Connecting to MongoDB "' + this.name + '(' + this.host + ':' + this.port + ' ' + (this.password && this.username ? 'with password)"' : 'without password)"'));
+	if(cluster.isMaster) global.gozy.info('Connecting to MongoDB "' + this.name + '"');
 		
-	var client = new mongo.Db(this.database, new mongo.Server(this.host, this.port, {}), { safe: false });
-	client.open(_.bind(function (err, p_client) {
+	mongo.MongoClient.connect(this.connection_url, _.bind(function (err, db) {
 		if(err) return cb(err);
 		
-		if(this.username && this.password) {
-			p_client.authenticate(this.username, this.password, _.bind(function (err, res) {
-				if(err) return cb(err);
-				else if(!res) return cb(new Error('Mongo "' + this.name + '" authentication failed'));
-			
-				if(cluster.isMaster) global.gozy.info('Successfully connected to ' + this.name);
-				this.client = p_client;
-				cb && cb();
-			}, this));	
-		} else {
-			if(cluster.isMaster) global.gozy.info('Successfully connected to ' + this.name);
-			this.client = p_client;
-			cb && cb();
-		}
+		if(cluster.isMaster) global.gozy.info('Successfully connected to ' + this.name);
+		this.client = db;
+		cb && cb();
 	}, this));
 };
 
@@ -80,7 +64,7 @@ Mongo.prototype.generate_key_function = function () {
 Mongo.prototype.generate_update = function (name) {
 	var m = this;
 	return function () {
-		var collection = new Collection(m.client, name);
+		var collection = m.client.collection(name);
 		var _arguments = [], criteria = {};
 		criteria[__primary_key__] = this[__primary_key__];
 		_arguments.push(criteria);
@@ -93,7 +77,7 @@ Mongo.prototype.generate_update = function (name) {
 Mongo.prototype.generate_del = function (name) {
 	var m = this;
 	return function () {
-		var collection = new Collection(m.client, name);
+		var collection = m.client.collection(name);
 		var _arguments = [], criteria = {};
 		criteria[__primary_key__] = this[__primary_key__];
 		_arguments.push(criteria);
@@ -106,7 +90,7 @@ Mongo.prototype.generate_del = function (name) {
 Mongo.prototype.generate_save = function (name) {
 	var m = this;
 	return function (cb, safe) {
-		var collection = new Collection(m.client, name),
+		var collection = m.client.collection(name),
 			self = this;
 		
 		if(!this[__primary_key__]) {
@@ -140,7 +124,7 @@ Mongo.prototype.generate_findById = function (name, model) {
 		else 
 			q[__primary_key__] =  Id;
 		
-		(new Collection(m.client, name)).find(q).toArray(function (err, docs) {
+		m.client.collection(name).find(q).toArray(function (err, docs) {
 			if(err) return cb(err);
 			if(docs.length === 0) return cb(null, null);
 			return cb(null, new model(docs[0]));
@@ -151,9 +135,10 @@ Mongo.prototype.generate_findById = function (name, model) {
 Mongo.prototype.generate_ensureIndex = function (name) {
 	var m = this;
 	
-	return function () {
-		var collection = (new Collection(m.client, name));
-		return collection.ensureIndex.apply(collection, arguments);
+	return function (idx, opt, cb) {
+		var collection = m.client.collection(name);
+		if(!cb) cb = function (err) { if(err) global.gozy.error(err); };
+		return collection.ensureIndex.call(collection, idx, opt, cb);
 	};
 };
 
@@ -161,7 +146,7 @@ Mongo.prototype.generate_mapReduce = function (name) {
 	var m = this;
 	
 	return function () {
-		var collection = (new Collection(m.client, name));
+		var collection = m.client.collection(name);
 		return collection.mapReduce.apply(collection, arguments);
 	};	
 };
@@ -190,7 +175,7 @@ CursorWrapper.prototype.toArray = function (cb) {
 Mongo.prototype.generate_find = function (name, model) {
 	var m = this;
 	return function (cond, cb) {
-		(new Collection(m.client, name)).find(cond, function (err, cursor) {
+		m.client.collection(name).find(cond, function (err, cursor) {
 			if(err) return cb(err);
 			return cb(null, new CursorWrapper(cursor, model));
 		});
@@ -200,7 +185,7 @@ Mongo.prototype.generate_find = function (name, model) {
 Mongo.prototype.generate_remove = function (name, model) {
 	var m = this;
 	return function (cond, cb) {
-		(new Collection(m.client, name)).remove(cond, cb);
+		m.client.collection(name).remove(cond, cb);
 	};
 };
 
