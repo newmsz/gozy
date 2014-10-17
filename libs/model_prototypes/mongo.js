@@ -53,6 +53,7 @@ Mongo.prototype.attachModel = function (model) {
 	model.find = this.generate_find(collection_name, model[collection_name]);
 	model.remove = this.generate_remove(collection_name, model[collection_name]);
 	model.ensureIndex = this.generate_ensureIndex(collection_name);
+	model.mapReduce = this.generate_mapReduce(collection_name);
 	model.ObjectID = ObjectID;
 	
 	model.emit('initialize', model[collection_name]);
@@ -154,6 +155,15 @@ Mongo.prototype.generate_ensureIndex = function (name) {
 		var collection = (new Collection(m.client, name));
 		return collection.ensureIndex.apply(collection, arguments);
 	};
+};
+
+Mongo.prototype.generate_mapReduce = function (name) {
+	var m = this;
+	
+	return function () {
+		var collection = (new Collection(m.client, name));
+		return collection.mapReduce.apply(collection, arguments);
+	};	
 };
 
 function CursorWrapper(cursor, model) {
