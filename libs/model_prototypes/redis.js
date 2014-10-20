@@ -86,7 +86,7 @@ Redis.prototype.attachModel = function (model) {
 		name = model._filename,
 		self = this;
 	if(!type && cluster.isMaster) return global.gozy.error('Model for Redis, "' + name + '", does not specify data type');
-	if(!defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
+	if(type != 'STRING' && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
 	if(!name && cluster.isMaster) return global.gozy.error('illegal `require` for the redis model');
 	if(model._opt.enableSubscription) {
 		if(cluster.isMaster) global.gozy.info(this.name + '\'s model ' + name + ' has enabled subscription mode');
@@ -193,8 +193,14 @@ Redis.prototype.attachModel = function (model) {
 		['get'].forEach(function (cmd) {
 			model[cmd] = me.KEY_GETFUNC(model[name], cmd, name + '.');
 		});
+		['incr'].forEach(function (cmd) {
+			model[cmd] = me.KEY_FUNC(model[name], cmd, name + '.');
+		});
 		['getset'].forEach(function (cmd) {
 			model[cmd] = me.KEY_ARG1_GETFUNC(model[name], cmd, name + '.');
+		});
+		['psetex', 'setex'].forEach(function (cmd) {
+			model[cmd] = me.KEY_ARG1_ARG2_FUNC(model[name], cmd, name + '.');
 		});
 		['set', 'setnx'].forEach(function (cmd) {
 			model[name].prototype[cmd] = me.SELFKEY_SETFUNC(model[name], cmd, name + '.');
@@ -269,7 +275,6 @@ Redis.prototype.KEY_FUNC = function (model, func_name, name) {
 	return function (key, cb) {
 		try {
 			if(!cb) return cb(new Error('no callback function is defined in ' + func_name + ', ' + name));
-			
 			if(!isNULL(key)) return me.redis[func_name](name + key, cb);
 			else return cb(new Error('null key for ' + name));
 		} catch (e) { cb(e); }
@@ -283,8 +288,15 @@ Redis.prototype.KEY_GETFUNC = function (model, func_name, name) {
 			if(!cb) return cb(new Error('no callback function is defined in ' + func_name + ', ' + name));
 			if(!isNULL(key)) return me.redis[func_name](name + key, function (err, result) {
 				if(err || !result) return cb(err, null);
-				if(typeof result === 'string') result = JSON.parse(result);
-				return cb(null, new model(result, key));
+				if(typeof result === 'string') {
+					try {
+						var parsed_result = JSON.parse(result);
+						return cb(null, new model(parsed_result, key));
+					} catch (e) {
+						return cb(null, result);
+					}
+				} else 
+					return cb(null, new model(result, key));
 			});
 			else return cb(new Error('null key for ' + name));
 		} catch (e) { cb(e); }
