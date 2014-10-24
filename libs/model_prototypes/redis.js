@@ -86,7 +86,7 @@ Redis.prototype.attachModel = function (model) {
 		name = model._filename,
 		self = this;
 	if(!type && cluster.isMaster) return global.gozy.error('Model for Redis, "' + name + '", does not specify data type');
-	if(type != 'STRING' && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
+	if(model._opt.type != 'STRING' && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
 	if(!name && cluster.isMaster) return global.gozy.error('illegal `require` for the redis model');
 	if(model._opt.enableSubscription) {
 		if(cluster.isMaster) global.gozy.info(this.name + '\'s model ' + name + ' has enabled subscription mode');

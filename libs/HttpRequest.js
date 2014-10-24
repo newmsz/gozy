@@ -27,7 +27,6 @@ function HttpRequest(req, cb) {
 	this._httpVersion = req.httpVersion;
 	this._headers = req.headers;
 	this._url = url.parse(req.url);
-	
 	if(this._url.query) this._url.query = qs.parse(this._url.query);
 	this._method = req.method;
 	this._cookie = parseCookie(this._headers['cookie']);
