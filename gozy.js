@@ -25,16 +25,19 @@ Gozy.prototype.logLevel = function (level) {
 };
 
 Gozy.prototype.bindModels = function (path) {
+    if(!path) throw 'ModelPath is not defined';
 	model.bind(path, this);
 	return this;
 };
 
 Gozy.prototype.bindViews = function (path) {
+    if(!path) throw 'ViewPath is not defined';
 	view.bind(path, this);
 	return this;
 };
 
 Gozy.prototype.bindJobs = function (path) {
+    if(!path) throw 'JobPath is not defined';
 	this._jobpath = path;
 	//job.bind(path, this);
 	return this;
