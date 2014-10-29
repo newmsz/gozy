@@ -39,7 +39,7 @@ Gozy.prototype.bindViews = function (path) {
 Gozy.prototype.bindJobs = function (path) {
     if(!path) throw 'JobPath is not defined';
 	this._jobpath = path;
-	//job.bind(path, this);
+	job.bind(path, this);
 	return this;
 };
 
