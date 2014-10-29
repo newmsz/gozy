@@ -59,7 +59,7 @@ Gozy.prototype.listen = function (port) {
 				cluster.fork();
 			
 			cluster.on('exit', function(worker, code, signal) {
-				global.gozy.error('worker %d died (%s). restarting...', worker.process.pid, signal || code);
+				global.gozy.error('worker ' + worker.process.pid + ' died (' + (signal || code) + '). restarting...');
 				cluster.fork();
 			});
 		} else {
