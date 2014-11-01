@@ -293,7 +293,9 @@ Redis.prototype.KEY_GETFUNC = function (model, func_name, name) {
 						var parsed_result = JSON.parse(result);
 						return cb(null, new model(parsed_result, key));
 					} catch (e) {
-						return cb(null, result);
+					    if(e.toString().match(/SyntaxError/))
+					        return cb(null, result);
+					    throw e;
 					}
 				} else 
 					return cb(null, new model(result, key));
