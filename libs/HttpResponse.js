@@ -95,8 +95,15 @@ HttpResponse.prototype.closeConnection = function () {
 };
 
 HttpResponse.prototype.contentType = function (contentType) {
-	if(contentType.split(';').length === 1) this._content_type = contentType + '; charset=UTF-8';
-	else this._content_type = contentType; 
+    switch(contentType) {
+    case 'application/json':
+    case 'text/plain':
+    case 'text/css':
+    case 'text/html':
+        contentType += '; charset=UTF-8';
+    }
+    
+	this._content_type = contentType; 
 	return this;
 };
 

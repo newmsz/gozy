@@ -53,7 +53,6 @@ Gozy.prototype.setNumberOfWorkers = function (num) {
 	return this;
 };
 
-
 Gozy.prototype.listen = function (port) {
 	prep.call(this, _.bind(function (err) {
 		if(err) global.gozy.error(err);
