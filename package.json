@@ -1,6 +1,6 @@
 {
   "name": "gozy",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "go crazy",
   "author": "newmsz <newms@newms.org>",
   "contributors": [
@@ -16,16 +16,16 @@
     "url": "https://github.com/newmsz/gozy.git"
   },
   "dependencies": {
-  	"underscore": "1.4.x",
-  	"winston": "0.6.x",
-  	"async": "0.1.x",
-  	"mongodb": "1.4.x",
-  	"redis": "0.8.x",
-  	"mysql": "2.0.x",
-  	"formidable": "1.0.x",
-  	"nodemailer": "0.4.x",
-  	"mime": "1.2.x",
-  	"uglify-js": "2.4.x",
-  	"uglifycss": "0.0.x"
+    "underscore": "1.4.x",
+    "winston": "0.6.x",
+    "async": "0.1.x",
+    "mongodb": "1.4.x",
+    "redis": "0.8.x",
+    "mysql": "2.0.x",
+    "formidable": "1.0.x",
+    "nodemailer": "0.4.x",
+    "mime": "1.2.x",
+    "uglify-js": "2.4.x",
+    "uglifycss": "0.0.x"
   }
 }
