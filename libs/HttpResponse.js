@@ -174,6 +174,21 @@ HttpResponse.prototype.error = function (err) {
 
 //------------------------------------- RAW FUNCTION
 
+HttpResponse.prototype.setContentEncoding = function (ce) {
+	switch(ce.toLowerCase()) {
+	case 'gzip':
+		break;
+	case 'deflate':
+		break;
+	default:
+		throw new Error('Unrecognizable content encoding: ' + ce);
+	}
+};
+
+HttpResponse.prototype.getResponseStream = function () {
+	return this._response;
+};
+
 HttpResponse.prototype.commit = function () {
 	if(this._committed) return;
 	

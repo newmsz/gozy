@@ -1,5 +1,3 @@
-"use strict";
-
 var cluster = require('cluster'),
 	redis = require('redis'),
 	_ = require('underscore');
@@ -85,9 +83,9 @@ Redis.prototype.attachModel = function (model) {
 		defaults = model._opt.defaults,
 		name = model._filename,
 		self = this;
-	if(!type && cluster.isMaster) return global.gozy.error('Model for Redis, "' + name + '", does not specify data type');
-	if(model._opt.type != 'STRING' && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
-	if(!name && cluster.isMaster) return global.gozy.error('illegal `require` for the redis model');
+	if(!type && cluster.isMaster) throw new Error('Model for Redis, "' + name + '", does not specify data type');
+	if((model._opt.type != 'STRING' && model._opt.type != 'LIST') && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
+	if(!name && cluster.isMaster) throw new Error('illegal `require` for the redis model: No name specified');
 	if(model._opt.enableSubscription) {
 		if(cluster.isMaster) global.gozy.info(this.name + '\'s model ' + name + ' has enabled subscription mode');
 		this.clone(function (err, subinst) {
@@ -212,7 +210,12 @@ Redis.prototype.attachModel = function (model) {
 			model[cmd] = me.KEYARRAY_FUNC(model[name], cmd, name + '.');
 		});
 		break;
-	
+	case 'LIST':
+		['lpop', 'llen', 'lrange', 'rpop', 'lpush', 'lpushx', 'lrem', 'lset', 'rpush', 'rpushx', 'rpoplpush'].forEach(function (cmd) {
+			model[cmd] = me.KEY_FUNCS(model[name], cmd, name + '.');
+		});
+		break;
+	default: throw new Error('Unknown Redis type: ' + type);
 	}
 
 	model.emit('initialize', model[name]);
@@ -279,6 +282,15 @@ Redis.prototype.KEY_FUNC = function (model, func_name, name) {
 			else return cb(new Error('null key for ' + name));
 		} catch (e) { cb(e); }
 	};
+};
+
+Redis.prototype.KEY_FUNCS = function (model, func_name, name) {
+	var me = this;
+	return function () {
+		var args = Array.prototype.slice.call(arguments);
+		args[0] = name + args[0];
+		me.redis[func_name].apply(me.redis, args);
+	};	
 };
 
 Redis.prototype.KEY_GETFUNC = function (model, func_name, name) {
