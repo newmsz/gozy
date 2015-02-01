@@ -268,7 +268,7 @@ HttpRequest.prototype.isXHROriginatedFrom = function (origin) {
 };
 
 HttpRequest.prototype.pathname = function (pathno) {
-    if(pathno) {
+    if(typeof pathno == 'number') {
         var paths = this._url.pathname.split('/');
         return paths[pathno + 1];
     }
