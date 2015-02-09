@@ -84,7 +84,7 @@ Redis.prototype.attachModel = function (model) {
 		name = model._filename,
 		self = this;
 	if(!type && cluster.isMaster) throw new Error('Model for Redis, "' + name + '", does not specify data type');
-	if((model._opt.type != 'STRING' && model._opt.type != 'LIST') && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
+	if((model._opt.type == 'HASH') && !defaults && cluster.isMaster) global.gozy.warn('Model for Redis, "' + name + '", does not have default values');
 	if(!name && cluster.isMaster) throw new Error('illegal `require` for the redis model: No name specified');
 	if(model._opt.enableSubscription) {
 		if(cluster.isMaster) global.gozy.info(this.name + '\'s model ' + name + ' has enabled subscription mode');
@@ -106,7 +106,7 @@ Redis.prototype.attachModel = function (model) {
 		model[cmd] = me.KEY_FUNC(model[name], cmd, name + '.');
 	});
 	
-	['pexpire', 'expire'].forEach(function (cmd) {
+	['pexpire', 'expire', 'expireat', 'pexpireat'].forEach(function (cmd) {
 		model[cmd] = me.KEY_ARG1_FUNC(model[name], cmd, name + '.');
 	});
 	
@@ -146,7 +146,7 @@ Redis.prototype.attachModel = function (model) {
 		model[name].prototype[cmd] = me.SELFKEY_FUNC(model[name], cmd, name + '.');
 	});
 			
-	['pexpire', 'expire'].forEach(function (cmd) {
+	['pexpire', 'expire', 'pexpireat', 'expireat'].forEach(function (cmd) {
 		model[name].prototype[cmd] = me.SELFKEY_ARG1_FUNC(model[name], cmd, name + '.');
 	});
 	
@@ -166,11 +166,8 @@ Redis.prototype.attachModel = function (model) {
 		});
 		break;
 	case 'SET':
-		['spop', 'scard', 'smembers'].forEach(function (cmd) {
-			model[cmd] = generate_redis_func.KEY_FUNC.call(model[name], cmd, name + '.', model[name]);
-		});
-		['sadd', 'srem'].forEach(function (cmd) {
-			model[cmd] = generate_redis_func.KEY_ARG1_FUNC.call(model[name], cmd, name + '.');
+		['spop', 'scard', 'smembers', 'sadd', 'srem'].forEach(function (cmd) {
+			model[cmd] = me.KEY_FUNCS(model[name], cmd, name + '.');
 		});
 		break;
 	case 'SORTEDSET':
