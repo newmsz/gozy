@@ -19,12 +19,6 @@ case 'init': return init();
 default: return printUsage('unknown command: ' + process.argv[2]);
 }
 
-// application
-//   controller
-//   view
-//   model
-// index.js
-
 function init() {
     var path = require('path'),
         fs = require('fs');
@@ -40,10 +34,10 @@ function init() {
         MONGO_COLLECTION_JS = path.join(MODEL_PATH, 'MyMongoCollectionName.js'),
         INDEX_JS = path.join(cwd, 'index.js');
 
-    // if(!fs.existsSync(APPLICATION_PATH)) {
-        // fs.mkdirSync(APPLICATION_PATH);
+    if(!fs.existsSync(APPLICATION_PATH)) {
+        fs.mkdirSync(APPLICATION_PATH);
 
-        // fs.mkdirSync(MODEL_PATH);
+        fs.mkdirSync(MODEL_PATH);
         fs.writeFileSync(MYSQL_TABLE_JS, [
                 "/*",
                 "require('gozy').Model(this, 'MyMySQL', {",
@@ -76,7 +70,7 @@ function init() {
                 "*/"
         ].join('\n'));
 
-        // fs.mkdirSync(VIEW_PATH);
+        fs.mkdirSync(VIEW_PATH);
         fs.writeFileSync(INDEX_GET_JS, [
                 "require('gozy').View(this, {",
                 "    'accept-url': /^\\/$/,",
@@ -89,8 +83,7 @@ function init() {
                 "    return response.OK().html('<html><body>Welcome to blank page!</body></html>').commit();",
                 "});"
         ].join('\n'));
-    // } else console.error('gozy: ' + APPLICATION_PATH + ' exists.')
-
+    } else console.error('gozy: ' + APPLICATION_PATH + ' exists.')
 
     if(!fs.existsSync(INDEX_JS)) {
         fs.writeFileSync(INDEX_JS, [
