@@ -5,7 +5,12 @@ Go crazy
 
 Install
 =======
-	npm install gozy
+```
+npm install -g gozy
+cd NewProject
+gozy init
+node .
+```
 
 Main Usge
 =========

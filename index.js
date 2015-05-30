@@ -16,7 +16,7 @@ function Gozy() {
 	this._logger = logger.defaultLogger();
 	this._websocket = false;
 	this._jobpath = null;
-	this._workers = require('os').cpus().length; 
+	this._workers = 0; 
 }
 
 Gozy.prototype.logLevel = function (level) {
@@ -56,7 +56,7 @@ Gozy.prototype.setNumberOfWorkers = function (num) {
 Gozy.prototype.listen = function (port) {
 	prep.call(this, _.bind(function (err) {
 		if(err) global.gozy.error(err);
-		if (cluster.isMaster) {
+		if (cluster.isMaster && this._workers > 0) {
 			for (var i = 0; i < this._workers; i++)
 				cluster.fork();
 			
