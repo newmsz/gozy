@@ -303,7 +303,7 @@ MySQL.prototype.generate_del = function (name, primary_key) {
 	var me = this;
 	
 	return function (cb) {		
-		if(this[primary_key]) {
+		if(this[primary_key] != null && this[primary_key] != undefined) {
 			me.mysql.query('DELETE FROM `' + name + '` WHERE `' + primary_key + '` = ?', [this[primary_key]], function (err, res) {
 				if(err) return cb(err);
 				return cb(null);
@@ -316,7 +316,7 @@ MySQL.prototype.rawQuery = function () {
 	var me = this;
 	
 	return function (cb) {		
-		if(this[primary_key]) {
+		if(this[primary_key] != null && this[primary_key] != undefined) {
 			me.mysql.query('DELETE FROM `' + name + '` WHERE `' + primary_key + '` = ?', [this[primary_key]], function (err, res) {
 				if(err) return cb(err);
 				return cb(null);
