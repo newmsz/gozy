@@ -102,14 +102,13 @@ Redis.prototype.attachModel = function (model) {
 	if(enums) model.ENUM = enums;
 	
 	var me = this;
-	['del', 'keys', 'pttl'].forEach(function (cmd) {
+	['del', 'keys', 'pttl', 'watch', 'persist'].forEach(function (cmd) {
 		model[cmd] = me.KEY_FUNC(model[name], cmd, name + '.');
 	});
 	
 	['pexpire', 'expire', 'expireat', 'pexpireat'].forEach(function (cmd) {
 		model[cmd] = me.KEY_ARG1_FUNC(model[name], cmd, name + '.');
 	});
-	
 	
 	var subscription_map = {},
 		subscription_map_idx = 0;
@@ -141,6 +140,8 @@ Redis.prototype.attachModel = function (model) {
 			delete subscription_map[idx];
 		}
 	};
+
+	model.multi = function () { return self.redis.multi(); };
 
 	['del', 'ttl', 'pttl'].forEach(function (cmd) {
 		model[name].prototype[cmd] = me.SELFKEY_FUNC(model[name], cmd, name + '.');
@@ -190,6 +191,9 @@ Redis.prototype.attachModel = function (model) {
 		});
 		['incr'].forEach(function (cmd) {
 			model[cmd] = me.KEY_FUNC(model[name], cmd, name + '.');
+		});
+		['incrby', 'set'].forEach(function (cmd) {
+			model[cmd] = me.KEY_ARG1_FUNC(model[name], cmd, name + '.');
 		});
 		['getset'].forEach(function (cmd) {
 			model[cmd] = me.KEY_ARG1_GETFUNC(model[name], cmd, name + '.');
@@ -300,6 +304,8 @@ Redis.prototype.KEY_GETFUNC = function (model, func_name, name) {
 				if(typeof result === 'string') {
 					try {
 						var parsed_result = JSON.parse(result);
+						if(typeof parsed_result == 'number') return cb(null, parsed_result);
+						
 						return cb(null, new model(parsed_result, key));
 					} catch (e) {
 					    if(e.toString().match(/SyntaxError/))

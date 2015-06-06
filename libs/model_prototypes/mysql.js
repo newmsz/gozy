@@ -316,10 +316,7 @@ MySQL.prototype.rawQuery = function () {
 	var me = this;
 	
 	return function (query, args, cb) {		
-		me.mysql.query(query, args, function (err, res) {
-			if(err) return cb(err);
-			return cb(null);
-		});
+		me.mysql.query(query, args, cb);
 	};
 };
 
