@@ -1,7 +1,7 @@
 gozy
 ====
 
-Go crazy
+Nodejs MVC Framework
 
 Install
 =======
